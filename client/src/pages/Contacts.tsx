@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState } from "react";
-import { usePostInfo } from "../api/api";
 import { Loader } from "lucide-react";
+import { usePostInfo } from "../api/api";
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({ email: "", message: "" });
