@@ -1,0 +1,54 @@
+/* Theme variables and dark-mode overrides */
+:root {
+  /* Brand colors */
+  --color-primary-green-100: #4ade80;
+  --color-primary-green-500: #00a341;
+  --color-primary-green-600: #00c44e;
+  --color-primary-green-700: #008534;
+
+  --color-primary-blue-100: #646cff;
+  --color-primary-blue-500: #3224c9;
+  --color-primary-blue-600: #4037d6;
+  --color-primary-blue-700: #251b9e;
+
+  /* Semantic */
+  --color-success: var(--color-primary-green-500);
+  --color-info: var(--color-primary-blue-500);
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Surfaces */
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
+
+  /* Text */
+  --text-primary: #1a1a1a;
+  --text-secondary: #4b5563;
+
+  /* Typography */
+  --font-family-base: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --line-height-base: 1.5;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+
+  /* Radius & spacing */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-1: #0b1220;
+    --surface-2: #0f1724;
+    --surface-3: #111827;
+    --text-primary: #e6eef8;
+    --text-secondary: #cbd5e1;
+  }
+}

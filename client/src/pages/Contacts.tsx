@@ -15,14 +15,16 @@ const Contact: React.FC = () => {
 
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		console.log("Form submitted:", formData);
+    console.log("Form submitted:", formData);
+
+
 
 		mutate({ email: formData.email, message: formData.message });
 		setFormData({ email: "", message: "" });
 	};
 
 	return (
-    <div className="container">
+    <div className="site-container">
       {isError && (
         <div className="rounded-lg p-4 mb-4 bg-red-100 border border-red-400 text-red-700">
           <h3 className="font-semibold">Oops! Something went wrong.</h3>
@@ -50,6 +52,7 @@ const Contact: React.FC = () => {
             value={formData.email}
             onChange={onchange}
             required
+            className="input-base"
           />
         </div>
 
@@ -62,24 +65,15 @@ const Contact: React.FC = () => {
             value={formData.message}
             onChange={onchange}
             required
+            className="input-base"
           />
         </div>
 
         <div className="btn-group">
-          <button 
-            type="submit" 
-            disabled={isPending}
-          >
-            {isPending ? (
-              <Loader className="animate-spin" />
-            ) : (
-              'Send'
-            )}
+          <button type="submit" disabled={isPending} className={`btn btn-primary ${isPending ? 'opacity-70 cursor-not-allowed' : ''}`}>
+            {isPending ? <Loader className="animate-spin" /> : 'Send'}
           </button>
-          <button 
-            type="reset"
-            onClick={() => setFormData({ email: "", message: "" })}
-          >
+          <button type="reset" onClick={() => setFormData({ email: "", message: "" })} className="btn">
             Clear
           </button>
         </div>

@@ -1,137 +1,282 @@
-import React, { useState, useEffect, useRef, } from "react";
-import { useGetInfo } from "../api/api";
-import { LoaderCircle } from "lucide-react";
-
-interface Partner {
-  name: string;
-  description: string;
-  imageUrl?: string;
-}
+import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { useGetInfo, usePostInfo } from '../api/api'
+import { LoaderCircleIcon, LoaderPinwheel } from 'lucide-react'
+import useAdminStore from '../stores/admin.stores'
 
 interface Preview {
-  file: File;
-  url: string;
-  id: string;
+  file: File
+  url: string
+  id: string
+}
+
+interface Partner {
+  _id: string
+  name: string
+  media: string
+  createdAt: string
+  updatedAt: string
 }
 
 const Partners: React.FC = () => {
-  const { data, isError, error, isLoading } = useGetInfo('/partners');
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [previews, setPreviews] = useState<Preview[]>([]);
-  const urlSetRef = useRef<Set<string>>(new Set());
+  const { data, isError, error, isPending, refetch } = useGetInfo('/partners')
+  const {
+    mutate,
+    isError: postIsError,
+    error: postError,
+    isPending: postPending
+  } = usePostInfo('/partners')
 
+  const admin = useAdminStore((state) => state.admin)
+
+  const [partners, setPartners] = useState<Partner[]>([])
+  const [preview, setPreview] = useState<Preview[]>([])
+  const URLSetRef = useRef<Set<string>>(new Set())
+
+  const [post, setPost] = useState<{
+    partnerName: string
+    media: File | null
+  }>({
+    partnerName: '',
+    media: null
+  })
+
+  // Sync fetched partners into state
   useEffect(() => {
-    if (data) {
-      setPartners(data);
+    if (Array.isArray(data)) {
+      setPartners(data)
     }
-  }, [data]);
+  }, [data])
 
-  // Cleanup on unmount: revoke any blob URL still active
+  // Revoke all object URLs on unmount
   useEffect(() => {
     return () => {
-      const urls = Array.from(urlSetRef.current);
-      urls.forEach(url => {
-        URL.revokeObjectURL(url);
-      });
-    };
-  }, []);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      const fileArray = Array.from(files);
-      const newPreviews = fileArray.map(file => {
-        const url = URL.createObjectURL(file);
-        urlSetRef.current.add(url);
-        return {
-          file,
-          url,
-          id: `${file.name}-${Date.now()}-${Math.random()}` // simple unique id
-        };
-      });
-      // Option: you might want to append or replace
-      setPreviews(prev => [...prev, ...newPreviews]);
-    }
-  };
-
-  const removePreview = (id: string) => {
-    setPreviews(prev => {
-      const toRemove = prev.find(p => p.id === id);
-      if (toRemove) {
-        URL.revokeObjectURL(toRemove.url);
-        urlSetRef.current.delete(toRemove.url);
+      for (const url of URLSetRef.current) {
+        try {
+          URL.revokeObjectURL(url)
+        } catch {
+          // ignore
+        }
       }
-      return prev.filter(p => p.id !== id);
-    });
-  };
+      URLSetRef.current.clear()
+    }
+  }, [])
+
+  // Handle file input change, create preview
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+    const url = URL.createObjectURL(file)
+    URLSetRef.current.add(url)
+
+    const id = `${file.name}-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 9)}`
+
+    const newPreview: Preview = { file, url, id }
+
+    // Only allow one preview at a time
+    // If you’d like multiple, change this logic
+    // Also clean up previous URL
+    preview.forEach((p) => {
+      URL.revokeObjectURL(p.url)
+      URLSetRef.current.delete(p.url)
+    })
+
+    setPreview([newPreview])
+    setPost((prev) => ({ ...prev, media: file }))
+  }, [preview])
+
+  // Remove a preview
+  const removePreview = useCallback((id: string) => {
+    setPreview((prevArr) => {
+      const toRemove = prevArr.find((p) => p.id === id)
+      if (toRemove) {
+        try {
+          URL.revokeObjectURL(toRemove.url)
+        } catch {
+          // ignore
+        }
+        URLSetRef.current.delete(toRemove.url)
+      }
+      const newArr = prevArr.filter((p) => p.id !== id)
+
+      // If the removed preview corresponded to current post.media, clear media
+      setPost((old) => {
+        if (toRemove && old.media && toRemove.file === old.media) {
+          return { partnerName: old.partnerName, media: null }
+        }
+        return old
+      })
+
+      return newArr
+    })
+  }, [])
+
+  // Submit form
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      const nameTrim = post.partnerName.trim()
+      if (!nameTrim || !post.media) {
+        // Optionally show validation
+        return
+      }
+
+      const formData = new FormData()
+      formData.append('name', nameTrim)
+      formData.append('media', post.media)
+
+      mutate(formData, {
+        onSuccess: (newPartner) => {
+          // Clean up previews and URLs
+          for (const url of URLSetRef.current) {
+            try {
+              URL.revokeObjectURL(url)
+            } catch {
+              // ignore
+            }
+          }
+          URLSetRef.current.clear()
+          setPreview([])
+          setPost({ partnerName: '', media: null })
+
+          // Refresh list
+          if (typeof refetch === 'function') {
+            refetch()
+          } else {
+            /*             setPartners((prev) => [newPartner, ...prev])
+             */
+            console.log(newPartner);
+          }
+        },
+        onError: (err) => {
+          console.error('Create partner error:', err)
+        }
+      })
+    },
+    [post, mutate, refetch]
+  )
 
   return (
-    <main className="...">
-      <h2>Tujitegemee</h2>
-      <div>
-        {isError && (
-          <div className="error ...">
-            <h3 className="font-semibold">Oops! Something went wrong.</h3>
-            <p>{error?.message ?? 'Please try again later.'}</p>
-          </div>
-        )}
+    <main className="site-container">
+      {isError && (
+        <div className="error">
+          <h3 className="font-semibold">Oops! Something went wrong.</h3>
+          <p>{error?.message ?? 'Please try again later.'}</p>
+        </div>
+      )}
 
-        {isLoading && (
-          <div className="loading ...">
-            Loading partners... <LoaderCircle className="animate-spin inline-block ml-2" />
-          </div>
-        )}
-
+      {isPending ? (
         <section>
-          <h1 className="text-4xl font-bold mb-4">Partners Page</h1>
-          <div>
-            {partners.length > 0 ? (
-              partners.map((partner, index) => (
-                <div key={index} className="mb-4 p-4 border border-gray-300 rounded-lg">
-                  <h2 className="text-2xl font-semibold mb-2">{partner.name}</h2>
-                  {partner.imageUrl && (
-                    <img src={partner.imageUrl} alt={partner.name} className="mb-2 rounded" />
-                  )}
-                  <p className="text-gray-300">{partner.description}</p>
+          Loading… <LoaderCircleIcon className="animate-spin inline ml-2" />
+        </section>
+      ) : (
+          <>
+            <section className="flex flex-row w-full gap-4 flex-wrap">
+              {partners.map((partner) => (
+                <div key={partner._id} className="flex items-center gap-4">
+                  <img
+                    src={partner.media}
+                    alt={partner.name}
+                    className="w-20 h-20 object-cover rounded"
+                  />
+                  <h3 className="font-medium">{partner.name}</h3>
                 </div>
-              ))
-            ) : (
-              <p>No partners available.</p>
-            )}
-          </div>
-        </section>
+              ))}
+            </section>
 
-        <section className="mt-8">
-          <h3 className="text-2xl font-semibold mb-4">Upload Partner Images</h3>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="mb-4"
-          />
-          <div className="flex flex-wrap gap-4">
-            {previews.map((prev) => (
-              <div key={prev.id} className="relative">
-                <img
-                  src={prev.url}
-                  alt={`Preview ${prev.id}`}
-                  className="w-24 h-24 object-cover rounded-md"
-                />
-                <button
-                  type="button"
-                  onClick={() => removePreview(prev.id)}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                >
-                  ✖
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+            <section className="mt-6">
+              {postIsError && (
+                <p className="text-red-500">
+                  {postError?.message ?? 'Error creating partner.'}
+                </p>
+              )}
+              {postPending ? (
+                <div>
+                  Posting… <LoaderPinwheel className="animate-spin inline ml-2" />
+                </div>
+              ) : (
+                admin !== null && (
+                  <fieldset>
+                    <legend>Add Partner</legend>
+                    <form onSubmit={handleSubmit}>
+                      <div>
+                        <label htmlFor="partnersImage">Partner’s Logo</label>
+                        <input
+                          type="file"
+                            name="partnersImage"
+                            id="partnersImage"
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            required
+                            className="input-base"
+                            disabled={postPending}
+                          />
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            {preview.map((prev) => (
+                              <div key={prev.id} className="relative">
+                                <img
+                                  src={prev.url}
+                                  alt={`Preview ${prev.id}`}
+                                  className="w-full h-full object-cover rounded-md"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removePreview(prev.id)}
+                                  className="btn btn--icon btn-danger absolute top-1 right-1"
+                                  disabled={postPending}
+                                >
+                                  X
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label htmlFor="partnerName">Partner’s Name</label>
+                        <input
+                          type="text"
+                          name="partnerName"
+                          id="partnerName"
+                          required
+                          onChange={(e) =>
+                            setPost((prev) => ({
+                              ...prev,
+                              partnerName: e.target.value
+                            }))
+                          }
+                          value={post.partnerName}
+                          placeholder="Input partner’s name"
+                          disabled={postPending}
+                          className="input-base"
+                        />
+                      </div>
+
+                      <div className="mt-4">
+                        <input
+                          type="submit"
+                          value="Submit"
+                          className="btn btn-primary"
+                          disabled={
+                            postPending ||
+                            !post.partnerName.trim() ||
+                            !post.media
+                          }
+                        />
+                      </div>
+                    </form>
+                  </fieldset>
+                )
+              )}
+            </section>
+        </>
+      )}
     </main>
-  );
-};
+  )
+}
 
-export default Partners;
+export default Partners

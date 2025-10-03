@@ -1,0 +1,39 @@
+/* Small utility classes not covered by Tailwind or for critical fallback */
+
+/* Use .site-container to avoid colliding with Tailwind's container utility */
+.site-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+}
+
+/* Navbar link patterns: keep styles small and composable. */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.12s ease;
+}
+.nav-link:hover { color: var(--color-primary-blue-500); }
+.nav-link--active { font-weight: var(--font-weight-medium); color: var(--color-primary-blue-600); }
+
+.text-gradient {
+  background: linear-gradient(90deg, var(--color-primary-green-500), var(--color-primary-blue-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.fade-in {
+  animation: fadeIn 350ms ease-out both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

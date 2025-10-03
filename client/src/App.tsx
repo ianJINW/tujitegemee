@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Partners from "./pages/Partners";
 import Stories from "./pages/Stories";
 import Us from "./pages/Us";
+import Login, { Logout, Register } from "./pages/createAdmin";
 
 function App() {
 	return (
@@ -14,9 +15,13 @@ function App() {
 
 				<Routes>
 					<Route path="/us" element={<Us />} />
+					<Route path="/login" element={<Login />} />
+					<Route path="/logout" element={<Logout />} />
+					<Route path="/register" element={<Register />} />
 					<Route path="/contact" element={<Contact />} />
 					<Route path="/stories" element={<Stories />} />
 					<Route path="/partners" element={<Partners />} />
+					<Route path="/admin" element={<Login />} />
 				</Routes>
 			</BrowserRouter>
 		</main>

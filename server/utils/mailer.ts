@@ -12,15 +12,33 @@ const transporter = nodemailer.createTransport({
 	tls: {
 		rejectUnauthorized: false,
 	},
-});
+}); 
 
 const sender = async (req: Request, res: Response) => {
-	const to = process.env.EMAIL_USER;
-
-	const { email, message } = req.body;
-	console.log({ to, email, message });
-
 	try {
+		// Validate request body
+		if (!req.body) {
+			return res.status(400).json({
+				status: false,
+				message: "Request body is missing"
+			});
+		}
+
+		const { email, message } = req.body;
+
+		// Validate required fields
+		if (!email || !message) {
+			return res.status(400).json({
+				status: false,
+				message: "Email and message are required"
+			});
+		}
+
+		const to = process.env.EMAIL_USER;
+		if (!to) {
+			throw new Error("EMAIL_USER environment variable is not set");
+		}
+
 		const mail = {
 			from: `"Tujitegemee Contact" <${process.env.EMAIL_USER}>`,
 			to,
@@ -30,19 +48,25 @@ const sender = async (req: Request, res: Response) => {
 			html: `<p>${message}</p><p><br>From: ${email}</p>`,
 		};
 
-		console.log(mail);
+		// Verify transporter connection
+		await transporter.verify();
 
-		await transporter.sendMail(mail);
+		// Send email
+		const info = await transporter.sendMail(mail);
+		console.log("Email sent successfully:", info.messageId);
 
-		res.status(200).json({ message: "Email sent successfully", status: true });
-	} catch (err: unknown) {
-		console.error(err);
-		res.status(500).json({
-			message: `Failed to send email: ${
-				err instanceof Error ? err.message : "Unknown error"
-			}`,
-			status: false,
+		return res.status(200).json({
+			status: true,
+			message: "Email sent successfully",
+			messageId: info.messageId
 		});
+
+	} catch (err: unknown) {
+		console.error("Email sending error:", err);
+		return res.status(500).json({
+			status: false,
+				message: err instanceof Error ? err.message : "Failed to send email"
+			});
 	}
 };
 
