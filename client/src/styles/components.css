@@ -29,7 +29,7 @@
   color: #fff;
 }
 .btn-danger:hover {
-  background-color: #c53030; /* slightly darker red */
+  background-color: var(--color-error);
 }
 
 /* Ghost / secondary button (useful for neutral actions) */
@@ -39,7 +39,7 @@
   border: 1px solid rgba(0,0,0,0.06);
 }
 .btn-ghost:hover {
-  background: rgba(0,0,0,0.03);
+  background: var(--surface-1);
 }
 
 /* Icon-style small button modifier */

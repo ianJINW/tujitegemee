@@ -9,7 +9,7 @@ import Login, { Logout, Register } from "./pages/createAdmin";
 
 function App() {
 	return (
-		<main className=" box-border p-4 shadow-lg rounded-lg m-4 w-full min-h-screen  align-center">
+		<main className="w-full min-h-screen p-4">
 			<BrowserRouter>
 				<Navbar />
 

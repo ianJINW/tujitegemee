@@ -77,9 +77,7 @@ const Partners: React.FC = () => {
 
     const newPreview: Preview = { file, url, id }
 
-    // Only allow one preview at a time
-    // If you’d like multiple, change this logic
-    // Also clean up previous URL
+
     preview.forEach((p) => {
       URL.revokeObjectURL(p.url)
       URLSetRef.current.delete(p.url)
@@ -190,9 +188,8 @@ const Partners: React.FC = () => {
 
             <section className="mt-6">
               {postIsError && (
-                <p className="text-red-500">
-                  {postError?.message ?? 'Error creating partner.'}
-                </p>
+                <p className="text-error">
+                  {`${postError}`}                </p>
               )}
               {postPending ? (
                 <div>

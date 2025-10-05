@@ -22,22 +22,23 @@ const Navbar: React.FC = () => {
 
 	return (
 		<header className="site-container shadow-md">
-			<div className="flex flex-row gap-2 mb-4 w-full text-gray-700">
-				<div>
-					<h1 className="font-semibold">Tujitegemee</h1>
+			<div className="flex flex-row gap-2 mb-4 w-full" style={{ alignItems: 'center' }}>
+				<span style={{ fontWeight: 700, color: 'var(--color-primary)', fontSize: '1.3rem', letterSpacing: '0.03em', marginRight: '2rem' }}>
+					TUJITEGEMEE
+				</span>
 					<div className="flex flex-col md:flex-row gap-2 md:gap-6">
 						<p>tel: +250788123456</p>
 						<p>
-							email: <a href="mailto:tujitegemee@gm.com">tujitegemee@gm.com</a>
+						email: <a href="mailto:tujitegemee@gm.com" className="nav-link">tujitegemee@gm.com</a>
 						</p>
 					</div>
-				</div>
-				<div className="ml-auto">
+				<div className="ml-auto flex flex-col gap-2">
 					<a
 						href="https://www.facebook.com/tujitegemee"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="mr-4 text-gray-800 hover:text-blue-500"
+						className="nav-link nav-link--icon"
+						aria-label="Facebook"
 					>
 						Facebook
 					</a>
@@ -45,7 +46,8 @@ const Navbar: React.FC = () => {
 						href="https://www.twitter.com/tujitegemee"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="mr-4 text-gray-800 hover:text-blue-500"
+						className="nav-link nav-link--icon"
+						aria-label="Twitter"
 					>
 						Twitter
 					</a>
@@ -53,7 +55,8 @@ const Navbar: React.FC = () => {
 						href="https://www.instagram.com/tujitegemee"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="mr-4 text-gray-800 hover:text-blue-500"
+						className="nav-link nav-link--icon"
+						aria-label="Instagram"
 					>
 						Instagram
 					</a>
@@ -61,7 +64,8 @@ const Navbar: React.FC = () => {
 						href="https://www.linkedin.com/company/tujitegemee"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="text-gray-800 hover:text-blue-500"
+						className="nav-link nav-link--icon"
+						aria-label="LinkedIn"
 					>
 						LinkedIn
 					</a>
@@ -92,19 +96,20 @@ const Navbar: React.FC = () => {
 							className={({ isActive }) =>
 								`nav-link ${isActive ? 'nav-link--active' : ''}`
 							}
+							style={{ display: 'flex', alignItems: 'center', gap: '0.4em' }}
 						>
 							{item.icon} {item.label}
 						</NavLink>
 					))}
 
 					{!isAuthenticated ? (
-						<NavLink to="/login" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>
+						<NavLink to="/login" className={({ isActive }) => `btn btn-outline ${isActive ? 'nav-link--active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.4em' }}>
 							<LogInIcon /> Log in
 						</NavLink>
 					) : (
-						<button onClick={handleLogout} className="nav-link">
-							<LogOutIcon /> Log out
-						</button>
+							<button onClick={handleLogout} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '0.4em' }}>
+								<LogOutIcon /> Log out
+							</button>
 					)}
 				</nav>
 			</section>

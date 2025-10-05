@@ -70,13 +70,13 @@ const Login: React.FC = () => {
   const handleDismissError = () => setErrorMsg(null)
 
   return (
-    <div className='flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900'>
-      <fieldset className='w-full max-w-md border border-gray-300 rounded-lg p-6 bg-white dark:bg-gray-800 shadow-lg'>
+    <div className='flex justify-center items-center min-h-screen bg-surface-2'>
+      <fieldset className='w-full max-w-md border border-surface-3 rounded-lg p-6 bg-surface-1 shadow-lg'>
         <legend>
           <h1>Login</h1>
         </legend>
         {errorMsg && (
-          <div className="flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <div className="flex items-center bg-error/10 border border-error text-error px-4 py-3 rounded relative mb-4" role="alert">
             <XCircle className="mr-2" size={20} />
             <span className="block flex-1">{errorMsg}</span>
             <button

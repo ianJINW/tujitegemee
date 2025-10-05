@@ -167,6 +167,9 @@ const Stories: React.FC = () => {
 				urlSetRef.current.delete(item.url);
 			} catch (e) {
 				// ignore
+				console.log(e);
+
+
 			}
 		});
 		setPreviewItems([]);
@@ -197,7 +200,7 @@ const Stories: React.FC = () => {
 					if (typeof refetch === "function") {
 						refetch();
 					}
-					// then clear previews and form
+					console.log(response);
 					clearFormAndPreviews();
 				},
 				onError: (err) => {
@@ -263,7 +266,7 @@ const Stories: React.FC = () => {
 			)}
 
 			{isPending && (
-				<div className="flex items-center gap-2 bg-green-600 px-4 py-2 rounded-md mb-4" aria-live="polite">
+				<div className="flex items-center gap-2 bg-success px-4 py-2 rounded-md mb-4" aria-live="polite">
 					<LucideLoaderPinwheel className="animate-spin" aria-hidden="true" />
 					<span>Loading stories...</span>
 				</div>
@@ -297,7 +300,7 @@ const Stories: React.FC = () => {
 				)}
 			</section>
 
-			{admin && (<form onSubmit={handleSubmit} encType="multipart/form-data" className="bg-gray-900 w-full max-w-md p-6 rounded-lg shadow-lg space-y-4" aria-busy={isPostPending}>
+			{admin && (<form onSubmit={handleSubmit} encType="multipart/form-data" className="bg-surface-3 w-full max-w-md p-6 rounded-lg shadow-lg space-y-4" aria-busy={isPostPending}>
 				<div>
 					<label htmlFor="title" className="block font-medium mb-1">
 						Title
