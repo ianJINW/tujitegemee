@@ -7,7 +7,7 @@ interface Story {
 	id: string;
 	title: string;
 	content: string;
-	media?: string[];
+	media?: string | string[];
 }
 
 interface PreviewItem {
@@ -27,7 +27,7 @@ const Stories: React.FC = () => {
 		error: postError,
 		isPending: isPostPending,
 	} = usePostInfo("/articles");
-	const admin = useAdminStore(state => state.admin)
+	const admin = useAdminStore((state) => state.admin);
 
 	const [stories, setStories] = useState<Story[]>([]);
 	const [title, setTitle] = useState("");
@@ -40,7 +40,24 @@ const Stories: React.FC = () => {
 
 	useEffect(() => {
 		if (data) {
-			setStories(data);
+			console.log("Fetched stories data:", data);
+			setStories(
+				data.map((item: any) => {
+					// Normalize media so front-end always sees an array of strings
+					let mediaArr: string[] = [];
+					if (Array.isArray(item.media)) {
+						mediaArr = item.media.filter((m) => typeof m === "string");
+					} else if (typeof item.media === "string") {
+						mediaArr = [item.media];
+					}
+					return {
+						id: item._id,
+						title: item.title,
+						content: item.content,
+						media: mediaArr,
+					};
+				})
+			);
 		}
 	}, [data]);
 
@@ -68,15 +85,20 @@ const Stories: React.FC = () => {
 	}, [previewItems]);
 
 	const makeId = useCallback(() => {
-		if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-			// @ts-ignore
+		if (
+			typeof crypto !== "undefined" &&
+			typeof crypto.randomUUID === "function"
+		) {
 			return crypto.randomUUID();
 		}
 		return Math.random().toString(36).slice(2, 9);
 	}, []);
 
 	const compressImage = async (file: File): Promise<File> => {
-		if (!file.type.startsWith("image/") || typeof createImageBitmap !== "function") {
+		if (
+			!file.type.startsWith("image/") ||
+			typeof createImageBitmap !== "function"
+		) {
 			return file;
 		}
 		try {
@@ -166,10 +188,7 @@ const Stories: React.FC = () => {
 				URL.revokeObjectURL(item.url);
 				urlSetRef.current.delete(item.url);
 			} catch (e) {
-				// ignore
 				console.log(e);
-
-
 			}
 		});
 		setPreviewItems([]);
@@ -182,30 +201,25 @@ const Stories: React.FC = () => {
 		(e: React.FormEvent<HTMLFormElement>) => {
 			e.preventDefault();
 			if (!title.trim() || !content.trim()) {
-				// you could use inline validation here instead of alert
 				alert("Please fill in title and content.");
 				return;
 			}
-
 			const payload = new FormData();
 			payload.append("title", title);
 			payload.append("content", content);
 			previewItems.forEach((item) => {
 				payload.append("article", item.file);
 			});
-
 			mutate(payload, {
 				onSuccess: (response) => {
-					// refetch stories so the new one shows up
 					if (typeof refetch === "function") {
 						refetch();
 					}
-					console.log(response);
+					console.log("Post response:", response);
 					clearFormAndPreviews();
 				},
 				onError: (err) => {
 					console.error("Post failed:", err);
-					// you may choose to keep existing previews so user can retry
 				},
 			});
 		},
@@ -253,20 +267,33 @@ const Stories: React.FC = () => {
 			<h1 className="text-4xl font-bold mb-8">Stories</h1>
 
 			{isError && (
-				<div role="alert" aria-live="assertive" className="bg-red-600 rounded-md px-4 py-2 mb-4 w-full max-w-xl">
+				<div
+					role="alert"
+					aria-live="assertive"
+					className="bg-red-600 rounded-md px-4 py-2 mb-4 w-full max-w-xl"
+				>
 					<h2 className="font-bold">Fetch Error</h2>
 					<p>{error?.message ?? "Something went wrong fetching stories."}</p>
 				</div>
 			)}
 			{isPostError && (
-				<div role="alert" aria-live="assertive" className="bg-red-600 rounded-md px-4 py-2 mb-4 w-full max-w-xl">
+				<div
+					role="alert"
+					aria-live="assertive"
+					className="bg-red-600 rounded-md px-4 py-2 mb-4 w-full max-w-xl"
+				>
 					<h2 className="font-bold">Post Error</h2>
-					<p>{postError?.message ?? "Something went wrong posting your story."}</p>
+					<p>
+						{postError?.message ?? "Something went wrong posting your story."}
+					</p>
 				</div>
 			)}
 
 			{isPending && (
-				<div className="flex items-center gap-2 bg-success px-4 py-2 rounded-md mb-4" aria-live="polite">
+				<div
+					className="flex items-center gap-2 bg-success px-4 py-2 rounded-md mb-4"
+					aria-live="polite"
+				>
 					<LucideLoaderPinwheel className="animate-spin" aria-hidden="true" />
 					<span>Loading stories...</span>
 				</div>
@@ -274,146 +301,175 @@ const Stories: React.FC = () => {
 
 			<section className="w-full max-w-3xl space-y-6 mb-12">
 				{stories.length > 0 ? (
-					stories.map((story) => (
-						<article key={story.id} className="bg-slate-800 p-5 rounded-2xl shadow-sm" aria-labelledby={`story-title-${story.id}`}>
-							<h2 id={`story-title-${story.id}`} className="text-2xl font-semibold mb-2">
-								{story.title}
-							</h2>
-							<p className="text-slate-300 mb-3">{story.content}</p>
-							{story.media && story.media.length > 0 && (
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-									{story.media.map((url, i) => (
-										<img
-											key={i}
-											src={url}
-											alt={`${story.title} — image ${i + 1}`}
-											className="rounded w-full h-40 object-cover"
-											loading="lazy"
-										/>
-									))}
-								</div>
-							)}
-						</article>
-					))
+					stories.map((story) => {
+						console.log("Story media:", story.media, typeof story.media);
+						const mediaArr = Array.isArray(story.media) ? story.media : [];
+
+						return (
+							<article
+								key={story.id}
+								className="bg-slate-800 p-5 rounded-2xl shadow-sm"
+								aria-labelledby={`story-title-${story.id}`}
+							>
+								<h2
+									id={`story-title-${story.id}`}
+									className="text-2xl font-semibold mb-2"
+								>
+									{story.title}
+								</h2>
+								<p className="text-slate-300 mb-3">{story.content}</p>
+								{mediaArr.length > 0 && (
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+										{mediaArr.map((url, i) => (
+											<img
+												key={i}
+												src={url}
+												alt={`${story.title} — image ${i + 1}`}
+												className="rounded w-full h-40 object-cover"
+												loading="lazy"
+											/>
+										))}
+									</div>
+								)}
+							</article>
+						);
+					})
 				) : (
-						<p className="text-slate-300">No stories available.</p>
+					<p className="text-slate-300">No stories available.</p>
 				)}
 			</section>
 
-			{admin && (<form onSubmit={handleSubmit} encType="multipart/form-data" className="bg-surface-3 w-full max-w-md p-6 rounded-lg shadow-lg space-y-4" aria-busy={isPostPending}>
-				<div>
-					<label htmlFor="title" className="block font-medium mb-1">
-						Title
-					</label>
-					<input
-						id="title"
-						type="text"
-						placeholder="Your story title"
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-						required
-						className="input-base"
-						disabled={isPostPending}
-					/>
-				</div>
-
-				<div
-					onDragEnter={onDragEnter}
-					onDragLeave={onDragLeave}
-					onDragOver={onDragOver}
-					onDrop={onDrop}
-					className={`rounded border-2 p-3 transition ${isDragging
-						? "border-dashed border-white/70 bg-white/5"
-						: "border-transparent"
-						}`}
+			{admin && (
+				<form
+					onSubmit={handleSubmit}
+					encType="multipart/form-data"
+					className="bg-surface-3 w-full max-w-md p-6 rounded-lg shadow-lg space-y-4"
+					aria-busy={isPostPending}
 				>
-					<label className="block font-medium mb-1">Images</label>
-					<div className="flex gap-2 items-center flex-row">
-						<button
-							type="button"
-							onClick={() => fileInputRef.current?.click()}
-							className="btn btn-ghost inline-flex items-center gap-2"
+					{/* form inputs */}
+					<div>
+						<label htmlFor="title" className="block font-medium mb-1">
+							Title
+						</label>
+						<input
+							id="title"
+							type="text"
+							placeholder="Your story title"
+							value={title}
+							onChange={(e) => setTitle(e.target.value)}
+							required
+							className="input-base"
 							disabled={isPostPending}
-						>
-							<UploadCloud size={18} aria-hidden="true" />
-							<span>Add images</span>
-						</button>
-						<p className="text-sm text-slate-400">or drag & drop here (png, jpg, webp)</p>
+						/>
 					</div>
 
-					<input
-						ref={fileInputRef}
-						id="images"
-						name="article"
-						type="file"
-						accept="image/*"
-						multiple
-						onChange={handleFilesChange}
-						className="sr-only"
-						disabled={isPostPending}
-					/>
-				</div>
-
-				{previewItems.length > 0 && (
-					<div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-						{previewItems.map((item) => (
-							<div key={item.id} className="relative group overflow-hidden rounded shadow bg-slate-700">
-								<img
-									src={item.url}
-									alt={item.file.name}
-									className="w-full h-28 object-cover rounded group-hover:opacity-80"
-									loading="lazy"
-								/>
-								<button
-									type="button"
-									aria-label={`Remove ${item.file.name}`}
-									onClick={() => handleRemovePreview(item.id)}
-									className="btn btn--icon btn-danger absolute top-1 right-1"
-									disabled={isPostPending}
-								>
-									<X size={14} aria-hidden="true" />
-								</button>
-								<div className="absolute left-1 bottom-1 px-1 py-0.5 bg-black/50 rounded text-xs">
-									<span className="sr-only">File:</span>
-									{item.file.name}
-								</div>
-							</div>
-						))}
-					</div>
-				)}
-
-				<div>
-					<label htmlFor="content" className="block font-medium mb-1">
-						Content
-					</label>
-					<textarea
-						id="content"
-						placeholder="Tell your story..."
-						value={content}
-						onChange={(e) => setContent(e.target.value)}
-						required
-						rows={5}
-						className="input-base"
-						disabled={isPostPending}
-					/>
-				</div>
-
-				<button
-					type="submit"
-					disabled={isPostPending}
-					className={`btn btn-primary w-full flex items-center justify-center gap-2 ${isPostPending ? "opacity-70 cursor-not-allowed" : ""
+					<div
+						onDragEnter={onDragEnter}
+						onDragLeave={onDragLeave}
+						onDragOver={onDragOver}
+						onDrop={onDrop}
+						className={`rounded border-2 p-3 transition ${
+							isDragging
+								? "border-dashed border-white/70 bg-white/5"
+								: "border-transparent"
 						}`}
-				>
-					{isPostPending ? (
-						<>
-							<LucideLoaderPinwheel className="animate-spin" aria-hidden="true" />
-							<span>Posting...</span>
-						</>
-					) : (
-						"Share your story"
+					>
+						<label className="block font-medium mb-1">Images</label>
+						<div className="flex gap-2 items-center flex-row">
+							<button
+								type="button"
+								onClick={() => fileInputRef.current?.click()}
+								className="btn btn-ghost inline-flex items-center gap-2"
+								disabled={isPostPending}
+							>
+								<UploadCloud size={18} aria-hidden="true" />
+								<span>Add images</span>
+							</button>
+							<p className="text-sm text-slate-400">
+								or drag & drop here (png, jpg, webp)
+							</p>
+						</div>
+
+						<input
+							ref={fileInputRef}
+							id="images"
+							name="article"
+							type="file"
+							accept="image/*"
+							multiple
+							onChange={handleFilesChange}
+							className="sr-only"
+							disabled={isPostPending}
+						/>
+					</div>
+
+					{previewItems.length > 0 && (
+						<div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+							{previewItems.map((item) => (
+								<div
+									key={item.id}
+									className="relative group overflow-hidden rounded shadow bg-slate-700"
+								>
+									<img
+										src={item.url}
+										alt={item.file.name}
+										className="w-full h-28 object-cover rounded group-hover:opacity-80"
+										loading="lazy"
+									/>
+									<button
+										type="button"
+										aria-label={`Remove ${item.file.name}`}
+										onClick={() => handleRemovePreview(item.id)}
+										className="btn btn--icon btn-danger absolute top-1 right-1"
+										disabled={isPostPending}
+									>
+										<X size={14} aria-hidden="true" />
+									</button>
+									<div className="absolute left-1 bottom-1 px-1 py-0.5 bg-black/50 rounded text-xs">
+										{item.file.name}
+									</div>
+								</div>
+							))}
+						</div>
 					)}
-				</button>
-			</form>)}
+
+					<div>
+						<label htmlFor="content" className="block font-medium mb-1">
+							Content
+						</label>
+						<textarea
+							id="content"
+							placeholder="Tell your story..."
+							value={content}
+							onChange={(e) => setContent(e.target.value)}
+							required
+							rows={5}
+							className="input-base"
+							disabled={isPostPending}
+						/>
+					</div>
+
+					<button
+						type="submit"
+						disabled={isPostPending}
+						className={`btn btn-primary w-full flex items-center justify-center gap-2 ${
+							isPostPending ? "opacity-70 cursor-not-allowed" : ""
+						}`}
+					>
+						{isPostPending ? (
+							<>
+								<LucideLoaderPinwheel
+									className="animate-spin"
+									aria-hidden="true"
+								/>
+								<span>Posting...</span>
+							</>
+						) : (
+							"Share your story"
+						)}
+					</button>
+				</form>
+			)}
 		</main>
 	);
 };

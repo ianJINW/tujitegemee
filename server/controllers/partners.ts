@@ -1,9 +1,8 @@
 import type { Request, Response } from "express";
 import Partners from "../models/Partner.model.ts";
-import { streamupload } from "../config/cloudinary.ts";
+import path from "path";
 
 const createPartner = async (req: Request, res: Response) => {
-
 	const { name } = req.body;
 	const image = req.file;
 
@@ -11,22 +10,22 @@ const createPartner = async (req: Request, res: Response) => {
 		// Validate required fields
 		if (!name || !name.trim()) {
 			res.status(400).json({ error: "Partner name is required" });
-			return
+			return;
 		}
 
 		if (!image) {
 			res.status(400).json({ error: "Partner image is required" });
-			return
+			return;
 		}
 
-		// Upload image to Cloudinary using your existing streamupload function
-		const imageURL = await streamupload(image);
-		console.log(`imageURL: ${imageURL}`);
+		// Create URL-friendly path for the uploaded file
+		const imageURL = `/uploads/partners/${path.basename(image.path)}`;
+		console.log("File saved to disk:", imageURL);
 
 		// Create new partner with the uploaded image URL
 		const newPartner = await Partners.create({
 			name: name.trim(),
-			media: imageURL
+			media: imageURL,
 		});
 
 		res.status(201).json({
@@ -35,13 +34,14 @@ const createPartner = async (req: Request, res: Response) => {
 		});
 
 		console.log("New partner created:", newPartner);
-
 	} catch (error: any) {
 		console.error("Error creating partner:", error);
 
 		if (error.code === 11000) {
 			// MongoDB duplicate key error (unique constraint violation)
-			res.status(409).json({ error: "A partner with this name already exists" });
+			res
+				.status(409)
+				.json({ error: "A partner with this name already exists" });
 		} else {
 			res.status(500).json({ error: "Internal server error" });
 		}
@@ -76,7 +76,7 @@ const getPartnerById = async (req: Request, res: Response) => {
 		console.error("Error fetching partner:", error);
 
 		// Handle invalid ObjectId format
-		if (error.name === 'CastError') {
+		if (error.name === "CastError") {
 			return res.status(400).json({ error: "Invalid partner ID format" });
 		}
 
@@ -96,14 +96,14 @@ const updatePartner = async (req: Request, res: Response) => {
 		if (name && name.trim()) {
 			updates.name = name.trim();
 		}
-
+		/* 
 		// Handle image upload if a new file is provided
 		if (req.file) {
 			// Upload new image to Cloudinary
 			const imageURL = await streamupload(req.file)
 
 			updates.media = imageURL;
-		}
+		} */
 
 		// Check if there are actually updates to make
 		if (Object.keys(updates).length === 0) {
@@ -113,11 +113,11 @@ const updatePartner = async (req: Request, res: Response) => {
 		// FIXED: Correct usage of findByIdAndUpdate
 		// First parameter: the ID, Second parameter: the updates object
 		const updatedPartner = await Partners.findByIdAndUpdate(
-			id,           // The document ID
-			updates,      // The updates to apply
+			id, // The document ID
+			updates, // The updates to apply
 			{
-				new: true,           // Return the updated document
-				runValidators: true  // Run schema validators on update
+				new: true, // Return the updated document
+				runValidators: true, // Run schema validators on update
 			}
 		);
 
@@ -129,15 +129,16 @@ const updatePartner = async (req: Request, res: Response) => {
 			partner: updatedPartner,
 			message: `Partner updated successfully`,
 		});
-
 	} catch (error: any) {
 		console.error("Error updating partner:", error);
 
 		// Handle specific error types
-		if (error.name === 'CastError') {
+		if (error.name === "CastError") {
 			return res.status(400).json({ error: "Invalid partner ID format" });
 		} else if (error.code === 11000) {
-			return res.status(409).json({ error: "A partner with this name already exists" });
+			return res
+				.status(409)
+				.json({ error: "A partner with this name already exists" });
 		}
 
 		res.status(500).json({ error: "Internal server error" });

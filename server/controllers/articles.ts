@@ -1,39 +1,32 @@
 import type { Request, Response } from "express";
 import Story from "../models/Story.model.ts";
-import { streamupload } from "../config/cloudinary.ts";
+import path from "path";
 
 const createArticle = async (req: Request, res: Response) => {
-	console.log("Request body:", req.body);
-
 	console.log("Request body:", req.body);
 	console.log("Request file(s):", req.file, req.files);
 
 	const { title, content } = req.body;
-	console.log("Config:", {
-		cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-		api_key: process.env.CLOUDINARY_API_KEY,
-		upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET
-	});
+
 	let mediaUrl: string | undefined;
 	if (req.file) {
-		try {
-			mediaUrl = await streamupload(req.file);
-		} catch (uploadError) {
-			console.error("Error uploading media:", uploadError);
-			return res.status(500).json({ error: "Media upload error" });
-		}
+		// Create URL-friendly path for the uploaded file
+		mediaUrl = `/uploads/articles/${path.basename(req.file.path)}`;
+		console.log("File saved to disk:", mediaUrl);
 	}
 
 	try {
 		const article = await Story.create({
-			title: title.trim(), content: content.trim(), media: mediaUrl,
+			title: title.trim(),
+			content: content.trim(),
+			media: mediaUrl,
 		});
 
 		console.log(article, `article`);
 
-		await getArticles(req, res)
+		await getArticles(req, res);
 
-	/* 	res
+		/* 	res
 			.status(201)
 			.json({ article, message: `Article ${title} created successfully` }); */
 	} catch (error) {
@@ -41,7 +34,7 @@ const createArticle = async (req: Request, res: Response) => {
 		return res.status(500).json({
 			success: false,
 			message: "Failed to create article",
-			error: error instanceof Error ? error.message : "Unknown error occurred"
+			error: error instanceof Error ? error.message : "Unknown error occurred",
 		});
 	}
 };

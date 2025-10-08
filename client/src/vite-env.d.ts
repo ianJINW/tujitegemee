@@ -1,5 +1,11 @@
 /// <reference types="vite/client" />
 
-VITE_APP_LOGINURL = '/api/login'
-VITE_APP_LOGOUTURL = "/api/logout"
-VITE_APP_REGISTERURL = "/api/register"
+interface ImportMetaEnv {
+  readonly VITE_APP_LOGINURL: string;
+  readonly VITE_APP_LOGOUTURL: string;
+  readonly VITE_APP_REGISTERURL: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

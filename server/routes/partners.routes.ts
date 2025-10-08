@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createPartner, deletePartner, getPartnerById, getPartners, updatePartner } from "../controllers/partners.ts";
-import { fileUpload } from "../config/multer.ts";
+import { fileUpload } from "../middleware/multer.ts";
 
 const partnerRouter = Router()
 

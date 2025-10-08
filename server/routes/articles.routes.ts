@@ -6,7 +6,7 @@ import {
 	updateArticle,
 	deleteArticle,
 } from "../controllers/articles.ts";
-import uploads from "../config/multer.ts";
+import uploads from "../middleware/multer.ts";
 
 const articlesRouter = Router();
 

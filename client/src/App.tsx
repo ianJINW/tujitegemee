@@ -9,11 +9,12 @@ import Login, { Logout, Register } from "./pages/createAdmin";
 
 function App() {
 	return (
-		<main className="w-full min-h-screen p-4">
+		<main className="w-full p-4 m-0 ">
 			<BrowserRouter>
 				<Navbar />
 
 				<Routes>
+					<Route path="/" element={<Us />} />
 					<Route path="/us" element={<Us />} />
 					<Route path="/login" element={<Login />} />
 					<Route path="/logout" element={<Logout />} />

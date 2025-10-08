@@ -10,8 +10,9 @@ import connectDB from "./utils/db.ts";
 import adminRouter from "./routes/admin.routes.ts";
 import articlesRouter from "./routes/articles.routes.ts";
 import partnerRouter from "./routes/partners.routes.ts";
-import { formParser } from "./config/multer.ts";
-import passport from './middleware/passport.ts';
+import { formParser } from "./middleware/multer.ts";
+import passport from "./middleware/passport.ts";
+import path from "path";
 
 const PORT = process.env.PORT || 8080;
 const frontendURL = process.env.FRONTEND_URL as string;
@@ -38,23 +39,41 @@ app.use(
 );
 app.use(helmet());
 
+// Set up static file serving for uploads
+const uploadsPath = path.join(import.meta.dirname, "./uploads");
+console.log("Serving uploads from:", uploadsPath);
+
+// Ensure uploads directories exist
+import fs from "fs";
+const articlesPath = path.join(uploadsPath, "articles");
+const partnersPath = path.join(uploadsPath, "partners");
+fs.mkdirSync(articlesPath, { recursive: true });
+fs.mkdirSync(partnersPath, { recursive: true });
+
+// Serve static files from uploads directory
+app.use("/uploads", express.static(uploadsPath));
+fs.mkdirSync(partnersPath, { recursive: true });
+
+// Serve uploads directory
+app.use("/uploads", express.static(uploadsPath));
+
 // Database connection
 connectDB(mongoUri);
 
 app.use((req: Request, res: Response, next) => {
-	if (req.method === 'POST') {
-		console.log('Request URL:', req.url);
-		console.log('Request Headers:', req.headers);
-		console.log('Request Body:', req.body);
+	if (req.method === "POST") {
+		console.log("Request URL:", req.url);
+		console.log("Request Headers:", req.headers);
+		console.log("Request Body:", req.body);
 	}
 	next();
 });
 
 // Routes
 app.use("/api/sendEmail", formParser, sender);
-app.use("/api/", adminRouter);
-app.use("/api/", articlesRouter);
-app.use("/api/", partnerRouter);
+app.use("/api", adminRouter);
+app.use("/api", articlesRouter);
+app.use("/api", partnerRouter);
 
 // Debug middleware - move after routes
 app.use((req: Request, res: Response, next) => {
@@ -69,7 +88,14 @@ app.get("/", (req: Request, res: Response) => {
 	res.send("Server is running");
 
 });
+/* 
 
+app.use('/api', (req: Request, res: Response) => {
+	console.log('req.body', req.body);
+
+	res.send("Server is running /api");
+});
+ */
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: any) => {
 	console.error("Server error:", err);

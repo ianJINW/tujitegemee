@@ -5,9 +5,9 @@ import { Mail, Lock, Eye, EyeClosed, XCircle, User2Icon } from 'lucide-react'
 import useAdminStore from '../stores/admin.stores'
 import { Link } from 'react-router-dom'
 
-const LoginURL = import.meta.env.VITE_APP_LOGINURL
-const LogoutURL = import.meta.env.VITE_APP_LOGOUTURL
-const RegisterURL = import.meta.env.VITE_APP_LREGISTERURL
+const LoginURL = import.meta.env.VITE_APP_LOGINURL as string
+const LogoutURL = import.meta.env.VITE_APP_LOGOUTURL as string
+const RegisterURL = import.meta.env.VITE_APP_REGISTERURL as string
 
 const Login: React.FC = () => {
   const [data, setData] = useState({ email: '', password: '' })
@@ -50,9 +50,12 @@ const Login: React.FC = () => {
       password: data.password
     }
 
+    console.log(`Login  ${LoginURL}`);
+
+
     mutate(formData, {
       onSuccess: data => {
-        // Success handled by auth store
+        setData({ email: '', password: '' })
         console.log('Login successful:', data)
       },
       onError: (err: unknown) => {
@@ -74,6 +77,7 @@ const Login: React.FC = () => {
       <fieldset className='w-full max-w-md border border-surface-3 rounded-lg p-6 bg-surface-1 shadow-lg'>
         <legend>
           <h1>Login</h1>
+          <legend>But</legend>
         </legend>
         {errorMsg && (
           <div className="flex items-center bg-error/10 border border-error text-error px-4 py-3 rounded relative mb-4" role="alert">
