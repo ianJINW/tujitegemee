@@ -2,12 +2,21 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import api from "../api/axios";
 
-interface User {
-	name: string;
+export interface User {
+	id: string;
 	email: string;
-	id: number;
+	username: string;
 	role: string;
-	token?: string;
+}
+
+export interface LoginResponse {
+	user: User;
+	token: string;
+}
+
+export interface LoginRequest {
+	email: string;
+	password: string;
 }
 
 interface AdminState {
@@ -15,7 +24,7 @@ interface AdminState {
 	isAuthenticated: boolean;
 	isAdmin: boolean;
 
-	login: (user: User) => void;
+	login: (data: LoginResponse) => void;
 	logout: () => void;
 	clear: () => void;
 
@@ -30,29 +39,36 @@ const useAdminStore = create<AdminState>()(
 			isAuthenticated: false,
 			isAdmin: false,
 
-			login: (user) => {
-				const adminFlag = user.role === "admin";
+			login: (response: LoginResponse) => {
+				console.log("Login response:", response);
 
-				// Store the token from the login response
-				if (user.token) {
-					localStorage.setItem("token", user.token);
-				} else {
-					console.warn("No token received during login");
+				const { user, token } = response;
+
+				if (!user?.id || !user?.email || !user?.role) {
+					console.error("Invalid user data:", user);
+					return;
 				}
 
-				// Store user without sensitive data
-				const { token, ...userWithoutToken } = user;
+				if (!token) {
+					console.error("Token is required");
+					return;
+				}
+
+				const adminFlag = user.role === "admin";
+
+				// Store token
+				localStorage.setItem("token", token);
+
 				set({
-					admin: userWithoutToken,
+					admin: user,
 					isAuthenticated: true,
 					isAdmin: adminFlag,
 				});
 
-				// Verify the auth state was set
-				console.log("Auth state updated:", {
+				console.log("Login successful:", {
+					user,
 					isAuthenticated: true,
 					isAdmin: adminFlag,
-					token,
 				});
 			},
 
@@ -75,9 +91,7 @@ const useAdminStore = create<AdminState>()(
 			},
 
 			_hasHydrated: false,
-			setHasHydrated: (v) => {
-				set({ _hasHydrated: v });
-			},
+			setHasHydrated: (v) => set({ _hasHydrated: v }),
 		}),
 		{
 			name: "admin-storage",
@@ -91,12 +105,10 @@ const useAdminStore = create<AdminState>()(
 				return async (persistedState, error) => {
 					if (error) {
 						console.error("Rehydrate error:", error);
-						// still mark hydrated so UI can proceed
 						store.setHasHydrated(true);
 						return;
 					}
 
-					// persistedState is the object read from storage: it contains the partials
 					console.log("persistedState:", persistedState);
 
 					const refreshURL = import.meta.env.VITE_APP_REFRESH__URL;
@@ -104,20 +116,23 @@ const useAdminStore = create<AdminState>()(
 
 					if (persistedState && persistedState.admin) {
 						try {
-							await api.get(refreshURL);
+							const response = await api.get(refreshURL);
+							// assume response contains { user, token }
+							const { user, token } = response.data;
+
+							// Update store state with new token & user
+							store.login({ user, token });
 						} catch (err) {
 							console.error("Refresh failed:", err);
-							// Attempt logout API
 							try {
 								await api.get(logoutURL);
 							} catch (logoutErr) {
 								console.error("Logout failed:", logoutErr);
 							}
-							// Reset store state
 							store.clear();
 						}
 					}
-					// Always mark hydrated (even if no admin)
+
 					store.setHasHydrated(true);
 				};
 			},

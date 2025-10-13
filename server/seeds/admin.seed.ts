@@ -59,11 +59,11 @@ dotenv.config();
     });
 
     await admin.save();
-    console.log('Admin user created:', {
-      id: admin._id.toString(),
-      username: admin.username,
-      email: admin.email,
-    });
+    console.log("Admin user created:", {
+			/*       id: admin._id.toString(),
+			 */ username: admin.username,
+			email: admin.email,
+		});
   } catch (error: any) {
     console.error(`Error seeding admin: ${error.message}`);
     process.exit(1);

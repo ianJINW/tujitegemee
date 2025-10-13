@@ -258,7 +258,7 @@ const Partners: React.FC = () => {
 							loc.pathname.startsWith("/partners") && (
 								<fieldset>
 									<legend>Add Partner</legend>
-									<form onSubmit={handleSubmit}>
+									<form onSubmit={handleSubmit} encType="multipart/form-data">
 										<div>
 											<label htmlFor="partnersImage">Partner’s Logo</label>
 											<input

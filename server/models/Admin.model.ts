@@ -1,68 +1,60 @@
-import { compare, genSalt, hash } from "bcrypt";
-import { model, Schema } from "mongoose";
+// src/models/Admin.model.ts
+import { Schema, model, Document } from "mongoose";
+import { genSalt, hash, compare } from "bcrypt";
 
-interface Admins {
+export interface IAdmin {
 	email: string;
 	username: string;
 	password: string;
-	role: string;
-	comparePassword(candidatePassword: string): Promise<boolean>;
+	role: "admin" | "user";
 }
 
-const AdminSchema = new Schema(
+// Extend Document with your methods
+export interface AdminDocument extends Document, IAdmin {
+	comparePassword(candidate: string): Promise<boolean>;
+}
+
+const AdminSchema = new Schema<AdminDocument>(
 	{
-		email: {
-			type: String,
-			required: true,
-			unique: true,
-		},
-		username: {
-			type: String,
-			required: true,
-			unique: true,
-		},
-		password: {
-			type: String,
-			required: true,
-		},
+		email: { type: String, required: true, unique: true },
+		username: { type: String, required: true, unique: true },
+		password: { type: String, required: true, select: false },
 		role: {
 			type: String,
-			required: true,
 			enum: ["admin", "user"],
 			default: "user",
 		},
 	},
-	{
-		timestamps: true,
-	}
+	{ timestamps: true }
 );
 
-AdminSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await genSalt(10);
-  this.password = await hash(this.password, salt);
-  next();
+AdminSchema.pre("save", async function (next) {
+	if (!this.isModified("password")) {
+		return next();
+	}
+	const salt = await genSalt(10);
+	this.password = await hash(this.password, salt);
+	next();
 });
 
-AdminSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
-  console.log("Comparing passwords...");
-	console.log("Stored hash:", this.password);
-	console.log("Candidate password:", candidatePassword);
-	const result = await compare(candidatePassword, this.password);
-	console.log("Comparison result:", result);
-	return result;
-}
+AdminSchema.methods.comparePassword = async function (
+	candidate: string
+): Promise<boolean> {
+	return await compare(candidate, this.password);
+};
 
-const Admin = model<Admins>('Admin', AdminSchema)
-export default Admin
+AdminSchema.pre("findOneAndUpdate", async function (this: any, next) {
+	const update = this.getUpdate();
 
-/* model Admin {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  username      String?
-  password        String
-  posts     Story[]    // assuming you also have a Post model
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-*/
+	if (update && "password" in update) {
+		const newPass = (update as any).password;
+
+		const salt = await genSalt(10);
+		const hashed = await hash(newPass, salt);
+		this.setUpdate({ ...update, password: hashed });
+	}
+	next();
+});
+
+const Admin = model<AdminDocument>("Admin", AdminSchema);
+export default Admin;

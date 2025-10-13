@@ -1,5 +1,4 @@
 import { Router } from "express";
-import multer from "multer";
 import {
 	createAdmin,
 	deleteAdmin,
@@ -9,9 +8,14 @@ import {
 	logout,
 	updateAdmin,
 } from "../controllers/admin.ts";
+import { authToken } from "../middleware/jwt.ts";
 
 const adminRouter = Router();
 
+adminRouter.post("/login", login);
+
+adminRouter.get("/verify", authToken);
+adminRouter.use(authToken);
 adminRouter.route("/").get(getAdmins).post(createAdmin);
 
 adminRouter
@@ -20,7 +24,6 @@ adminRouter
 	.put(updateAdmin)
 	.delete(deleteAdmin);
 
-adminRouter.post("/login", login);
 adminRouter.post("/logout", logout);
 
 export default adminRouter;
