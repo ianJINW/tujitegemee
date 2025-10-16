@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import Story from "../models/Story.model.ts";
-import path from "path";
+import { streamupload } from "../config/cloudinary.ts";
+import { Types } from "mongoose";
 
 const createArticle = async (req: Request, res: Response) => {
 	console.log("Request body:", req.body);
@@ -8,27 +9,36 @@ const createArticle = async (req: Request, res: Response) => {
 
 	const { title, content } = req.body;
 
-	let mediaUrl: string | undefined;
-	if (req.file) {
-		// Create URL-friendly path for the uploaded file
-		mediaUrl = `/uploads/articles/${path.basename(req.file.path)}`;
-		console.log("File saved to disk:", mediaUrl);
+	let mediaUrls: string[] = [];
+
+	console.log("Title:", title);
+	console.log("Content:", content);
+	console.log("Files:", req.files);
+
+	if (req.files && Array.isArray(req.files)) {
+		try {
+			// Upload all files to cloudinary
+			const uploadPromises = req.files.map(file => streamupload(file));
+			mediaUrls = await Promise.all(uploadPromises);
+
+			console.log("Files saved:", mediaUrls);
+		} catch (error) {
+			console.error("Error uploading media:", error);
+			return res.status(500).json({ error: "Media upload error" });
+		}
 	}
 
 	try {
 		const article = await Story.create({
 			title: title.trim(),
 			content: content.trim(),
-			media: mediaUrl,
+			media: mediaUrls,
 		});
 
 		console.log(article, `article`);
 
 		await getArticles(req, res);
 
-		/* 	res
-			.status(201)
-			.json({ article, message: `Article ${title} created successfully` }); */
 	} catch (error) {
 		console.error("Article creation error:", error);
 		return res.status(500).json({
@@ -52,8 +62,12 @@ const getArticles = async (req: Request, res: Response) => {
 const getArticleById = async (req: Request, res: Response) => {
 	const { id } = req.params;
 
+	if (!id || !Types.ObjectId.isValid(id)) {
+		return res.status(400).json({ error: "Invalid article ID format" });
+	}
+
 	try {
-		const article = await Story.findById(Number(id));
+		const article = await Story.findById(id);
 
 		if (!article) {
 			return res.status(404).json({ error: "Article not found" });

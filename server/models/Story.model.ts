@@ -11,7 +11,7 @@ const StorySchema = new Schema({
     required: true
   },
   media: {
-    type:String
+    type: Array
   }
 }) 
 

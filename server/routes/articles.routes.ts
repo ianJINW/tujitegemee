@@ -13,7 +13,8 @@ const articlesRouter = Router();
 articlesRouter
 	.route("/articles")
 	.get(getArticles)
-	.post(uploads.single("article"), createArticle);
+	.post(uploads.array("article"), createArticle);
+
 articlesRouter
 	.route("/articles/:id")
 	.get(getArticleById)

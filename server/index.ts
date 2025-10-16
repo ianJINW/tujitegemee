@@ -14,9 +14,9 @@ import { formParser } from "./middleware/multer.ts";
 import passport from "./middleware/passport.ts";
 import path from "path";
 
-const PORT = process.env.PORT || 8080;
-const frontendURL = process.env.FRONTEND_URL as string;
-const mongoUri = process.env.MONGO_URI as string;
+import { envConfig } from './config/env.config.ts';
+
+const { PORT, frontendURL, mongoUri } = envConfig;
 
 if (!frontendURL) {
 	throw new Error("FRONTEND_URL is not defined in environment variables");

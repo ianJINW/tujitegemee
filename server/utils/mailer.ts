@@ -1,18 +1,30 @@
 import nodemailer from "nodemailer";
 import type { Request, Response } from "express";
+import sgMail from "@sendgrid/mail";
+import { envConfig } from "../config/env.config.ts";
+
+const { SENDGRID_API_KEY, SENDGRID_FROM, EMAIL_USER, EMAIL_PASS } = envConfig;
+
+if (!EMAIL_USER || !EMAIL_PASS) {
+	throw new Error("Missing EMAIL_USER or EMAIL_PASS in environment variables");
+}
+
+if (!SENDGRID_API_KEY) {
+	throw new Error("Missing SENDGRID_API_KEY in environment variables");
+}
+
+
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 const transporter = nodemailer.createTransport({
-	host: process.env.SMTP_HOST || "smtp.gmail.com",
-	port: Number(process.env.SMTP_PORT) || 587,
-	secure: process.env.SMTP_PORT_SECURE === "true" ? true : false,
+	service: 'gmail',
 	auth: {
-		user: process.env.EMAIL_USER,
-		pass: process.env.EMAIL_PASS,
+		user: EMAIL_USER,
+		pass: EMAIL_PASS,
 	},
-	tls: {
-		rejectUnauthorized: false,
-	},
-}); 
+	pool: true,
+	maxConnections: 5,
+});
 
 const sender = async (req: Request, res: Response) => {
 	try {
@@ -34,13 +46,13 @@ const sender = async (req: Request, res: Response) => {
 			});
 		}
 
-		const to = process.env.EMAIL_USER;
+		const to = EMAIL_USER;
 		if (!to) {
 			throw new Error("EMAIL_USER environment variable is not set");
 		}
 
 		const mail = {
-			from: `"Tujitegemee Contact" <${process.env.EMAIL_USER}>`,
+			from: `"Tujitegemee Contact" <${EMAIL_USER}>`,
 			to,
 			replyTo: email,
 			subject: `New Contact Message from ${email}`,
@@ -69,5 +81,40 @@ const sender = async (req: Request, res: Response) => {
 			});
 	}
 };
+
+sgMail.setApiKey(SENDGRID_API_KEY)
+
+export const sendEmail = async (req: Request, res: Response) => {
+	// Validate request body
+	if (!req.body) {
+		return res.status(400).json({
+			status: false,
+			message: "Request body is missing"
+		});
+	}
+
+	if (!SENDGRID_FROM) {
+		throw new Error("SENDGRID_FROM environment variable is not set");
+	}
+
+	const { email, message } = req.body;
+
+	const msg = {
+		from: `"Tujitegemee Contact" <${EMAIL_USER}>`,
+		to: SENDGRID_FROM,
+		replyTo: email,
+		subject: `New Contact Message from ${email}`,
+		text: message,
+		html: `<p>${message}</p><p><br>From: ${email}</p>`,
+	};
+
+	try {
+		const response = await sgMail.send(msg);
+		console.log("Email sent:", response[0].statusCode);
+	} catch (error: any) {
+		console.error("Error sending email:", error.response?.body || error);
+		throw error;
+	}
+}
 
 export default sender;

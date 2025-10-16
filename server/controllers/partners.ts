@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import Partners from "../models/Partner.model.ts";
 import path from "path";
+import { streamupload } from "../config/cloudinary.ts";
 
 const createPartner = async (req: Request, res: Response) => {
 	const { name } = req.body;
@@ -19,10 +20,15 @@ const createPartner = async (req: Request, res: Response) => {
 		}
 
 		// Create URL-friendly path for the uploaded file
-		const imageURL = `/uploads/partners/${path.basename(image.path)}`;
-		console.log("File saved to disk:", imageURL);
+		let imageURL: string | undefined;
 
-		// Create new partner with the uploaded image URL
+		try {
+			imageURL = await streamupload(image)
+			console.log("File saved to disk:", imageURL);
+		} catch (error) {
+			console.error("Error uploading media:", error);
+			return res.status(500).json({ error: "Media upload error" });
+		}
 		const newPartner = await Partners.create({
 			name: name.trim(),
 			media: imageURL,
@@ -63,8 +69,6 @@ const getPartnerById = async (req: Request, res: Response) => {
 	const { id } = req.params;
 
 	try {
-		// FIXED: Use findById correctly - pass the ID directly, don't convert to number
-		// MongoDB ObjectIds are strings, not numbers
 		const partner = await Partners.findById(id);
 
 		if (!partner) {
@@ -96,14 +100,14 @@ const updatePartner = async (req: Request, res: Response) => {
 		if (name && name.trim()) {
 			updates.name = name.trim();
 		}
-		/* 
+
 		// Handle image upload if a new file is provided
 		if (req.file) {
 			// Upload new image to Cloudinary
 			const imageURL = await streamupload(req.file)
 
 			updates.media = imageURL;
-		} */
+		}
 
 		// Check if there are actually updates to make
 		if (Object.keys(updates).length === 0) {

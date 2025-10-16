@@ -1,4 +1,4 @@
-import multer, { diskStorage, memoryStorage, type Multer } from "multer";
+import multer, { diskStorage, type Multer } from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import type { RequestHandler } from "express";
 import path, { basename } from "path";
@@ -40,9 +40,11 @@ const storage = multer.diskStorage({
 	},
 });
 
+const memoryStorage = multer.memoryStorage();
+
 // Create multer instance with memory storage for handling file uploads
 const uploads = multer({
-	storage: storage,
+	storage: memoryStorage,
 	limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 	fileFilter: (req, file, cb) => {
 		const allowedTypes = /jpeg|jpg|png|gif/;

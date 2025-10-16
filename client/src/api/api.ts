@@ -1,9 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./axios";
 import useAdminStore from "../stores/admin.stores";
+import { useToastStore } from "../stores/toast.store";
 import type { LoginRequest, LoginResponse } from "../stores/admin.stores";
 
-type MutationPayload = Record<string, unknown>;
+type MutationPayload = Record<string, unknown> | FormData;
 
 const usePostInfo = (url: string) => {
 	return useMutation({
@@ -12,10 +13,11 @@ const usePostInfo = (url: string) => {
 		},
 		onSuccess: (data) => {
 			console.log("Info sent successfully:", data);
-			alert("Info sent successfully");
+			useToastStore.getState().addToast("Info sent successfully", "success");
 		},
 		onError: (error) => {
 			console.error("Error sending info:", error);
+			useToastStore.getState().addToast("Error sending info", "error");
 		},
 	});
 };
