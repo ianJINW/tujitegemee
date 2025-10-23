@@ -4,7 +4,7 @@ dotenv.config();
 import express, { type Request, type Response } from "express";
 import { createServer } from "http";
 import sender from "./utils/mailer.ts";
-import helmet from "helmet";
+import helmet from 'helmet';
 import cors from "cors";
 import connectDB from "./utils/db.ts";
 import adminRouter from "./routes/admin.routes.ts";
@@ -37,8 +37,22 @@ app.use(
 		credentials: true,
 	})
 );
-app.use(helmet({}))
+// Apply default security headers
+app.use(helmet());
 
+// Configure Content Security Policy
+app.use(
+	helmet.contentSecurityPolicy({
+		directives: {
+			defaultSrc: ["'self'"],
+			scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+			styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+			imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+			connectSrc: ["'self'", frontendURL],
+			fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+		},
+	})
+);
 // Set up static file serving for uploads
 const uploadsPath = path.join(import.meta.dirname, "./uploads");
 console.log("Serving uploads from:", uploadsPath);
