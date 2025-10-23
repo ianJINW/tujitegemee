@@ -13,6 +13,7 @@ import partnerRouter from "./routes/partners.routes.ts";
 import { formParser } from "./middleware/multer.ts";
 import passport from "./middleware/passport.ts";
 import path from "path";
+import { fileURLToPath } from "url";
 
 import { envConfig } from './config/env.config.ts';
 
@@ -37,24 +38,14 @@ app.use(
 		credentials: true,
 	})
 );
-// Apply default security headers
-app.use(helmet());
 
-// Configure Content Security Policy
-app.use(
-	helmet.contentSecurityPolicy({
-		directives: {
-			defaultSrc: ["'self'"],
-			scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-			styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-			imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
-			connectSrc: ["'self'", frontendURL],
-			fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-		},
-	})
-);
-// Set up static file serving for uploads
-const uploadsPath = path.join(import.meta.dirname, "./uploads");
+// Call helmet with an any-cast to avoid TypeScript "no call signatures" in some build setups
+app.use((helmet as any)());
+
+// Compute uploads path in an ESM-compatible way instead of import.meta.dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsPath = path.join(__dirname, "uploads");
 console.log("Serving uploads from:", uploadsPath);
 
 // Ensure uploads directories exist
@@ -65,10 +56,6 @@ fs.mkdirSync(articlesPath, { recursive: true });
 fs.mkdirSync(partnersPath, { recursive: true });
 
 // Serve static files from uploads directory
-app.use("/uploads", express.static(uploadsPath));
-fs.mkdirSync(partnersPath, { recursive: true });
-
-// Serve uploads directory
 app.use("/uploads", express.static(uploadsPath));
 
 // Database connection

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import Admin from "../models/Admin.model.ts";
 import type { AdminJwtPayload } from "../middleware/jwt.ts";
 import { authConfig } from "../config/auth.config.ts";
@@ -59,14 +59,18 @@ export const login = async (req: Request, res: Response) => {
 			role: admin.role,
 		};
 
-		const token = jwt.sign(payload, authConfig.jwtSecret, {
-			expiresIn: authConfig.jwtExpiry,
-		});
+		const token = jwt.sign(
+			payload,
+			Buffer.from(authConfig.jwtSecret),
+			{
+				expiresIn: authConfig.jwtExpiry,
+			} as SignOptions
+		);
 
 		res.cookie("jwt", token, authConfig.cookieOptions);
 
 		const safe = {
-			id: admin._id,
+			id: admin._id?.toString(),
 			email: admin.email,
 			username: admin.username,
 			role: admin.role,

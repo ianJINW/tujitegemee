@@ -1,12 +1,16 @@
 import * as dotenv from 'dotenv';
+import type { Secret } from 'jsonwebtoken';
+
 dotenv.config();
 
 if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET environment variable is not set');
 }
 
+const jwtSecret: Secret = process.env.JWT_SECRET;
+
 export const authConfig = {
-    jwtSecret: process.env.JWT_SECRET as string,
+    jwtSecret,
     jwtExpiry: process.env.EXPIRY_TIME || '1h',
     cookieOptions: {
         httpOnly: true,
