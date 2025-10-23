@@ -7,8 +7,6 @@ import SkeletonImage from "../components/SkeletonLooader";
 
 type Params = { id: string };
 
-
-
 const Story: React.FC = () => {
   const { id } = useParams<Params>();
   const { data, error, isError, isPending } = useGetInfo(`/articles/${id}`);
@@ -55,7 +53,6 @@ const Story: React.FC = () => {
           {data?.content}
         </p>
       </div>
-
 
     </main>
   );
