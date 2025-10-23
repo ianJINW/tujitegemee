@@ -3,19 +3,16 @@ dotenv.config();
 
 import express, { type Request, type Response } from "express";
 import { createServer } from "http";
-import sender from "./utils/mailer.ts";
 import helmet from 'helmet';
 import cors from "cors";
 import connectDB from "./utils/db.ts";
-import adminRouter from "./routes/admin.routes.ts";
-import articlesRouter from "./routes/articles.routes.ts";
-import partnerRouter from "./routes/partners.routes.ts";
-import { formParser } from "./middleware/multer.ts";
-import passport from "./middleware/passport.ts";
-import path from "path";
-import { fileURLToPath } from "url";
-
-import { envConfig } from './config/env.config.ts';
+import adminRouter from "./routes/admin.routes";
+import articlesRouter from "./routes/articles.routes";
+import partnerRouter from "./routes/partners.routes";
+import { formParser } from "./middleware/multer";
+import passport from "./middleware/passport";
+import { envConfig } from './config/env.config';
+import sender from "./utils/mailer.ts";
 
 const { PORT, frontendURL, mongoUri } = envConfig;
 
@@ -42,7 +39,7 @@ app.use(
 // Call helmet with an any-cast to avoid TypeScript "no call signatures" in some build setups
 app.use((helmet as any)());
 
-// Compute uploads path in an ESM-compatible way instead of import.meta.dirname
+/* // Compute uploads path in an ESM-compatible way instead of import.meta.dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsPath = path.join(__dirname, "uploads");
@@ -56,7 +53,7 @@ fs.mkdirSync(articlesPath, { recursive: true });
 fs.mkdirSync(partnersPath, { recursive: true });
 
 // Serve static files from uploads directory
-app.use("/uploads", express.static(uploadsPath));
+app.use("/uploads", express.static(uploadsPath)); */
 
 // Database connection
 connectDB(mongoUri);
