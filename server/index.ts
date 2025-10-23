@@ -37,7 +37,7 @@ app.use(
 		credentials: true,
 	})
 );
-app.use(helmet());
+app.use(helmet({}))
 
 // Set up static file serving for uploads
 const uploadsPath = path.join(import.meta.dirname, "./uploads");
