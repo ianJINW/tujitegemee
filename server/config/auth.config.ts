@@ -8,6 +8,7 @@ if (!process.env.JWT_SECRET) {
 }
 
 const jwtSecret: Secret = process.env.JWT_SECRET;
+const frontendURL = process.env.FRONTEND_URL as string
 
 export const authConfig = {
     jwtSecret,
@@ -23,9 +24,14 @@ export const authConfig = {
         expiry: '7d',
         cookieName: 'refreshToken',
     },
+    frontendURL
 } as const;
 
 // Type guard to ensure JWT secret is available
 if (!authConfig.jwtSecret) {
     throw new Error('JWT_SECRET must be a non-empty string');
+}
+
+if (!authConfig.frontendURL) {
+    throw new Error('FRONTEND_URL must be a non-empty string');
 }
