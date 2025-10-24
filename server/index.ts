@@ -66,10 +66,16 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
 
-// Ensure preflight OPTIONS requests are handled with the same CORS policy
-app.options('*', cors(corsOptions), (req: Request, res: Response) => {
-	// this route will return 204 due to optionsSuccessStatus
-	res.sendStatus(204);
+// Ensure preflight OPTIONS requests are handled with the same CORS policy.
+// Instead of registering an OPTIONS route with a path (which can trigger
+// path-to-regexp errors for some patterns), handle OPTIONS with a small
+// middleware. CORS middleware runs earlier, so headers will be set.
+app.use((req: Request, res: Response, next) => {
+	if (req.method === 'OPTIONS') {
+		// respond to preflight
+		return res.sendStatus(corsOptions.optionsSuccessStatus || 204);
+	}
+	next();
 });
 
 // Helmet
@@ -128,13 +134,13 @@ app.use((err: Error, req: Request, res: Response, next: any) => {
 	});
 });
 
+// Create handler for serverless environment
+const handler = process.env.VERCEL ? serverless(app) : undefined;
+
 // --- Export for serverless (Vercel) or listen locally
 if (process.env.VERCEL) {
-	// When running on Vercel, export a serverless handler.
-	// Vercel will call this function for each invocation.
-	// Note: make sure serverless-http is installed in dependencies.
+	// When running on Vercel, the handler will be used
 	console.log("Running in Vercel serverless environment - exporting handler");
-	export default serverless(app);
 } else {
 	// Local / traditional server mode
 	server.listen(PORT, () => {
@@ -145,3 +151,5 @@ if (process.env.VERCEL) {
 		console.error("Server error:", error);
 	});
 }
+
+export default handler;
