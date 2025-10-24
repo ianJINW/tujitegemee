@@ -16,6 +16,7 @@ import sender from "./utils/mailer.ts";
 
 const { PORT, frontendURL, mongoUri } = envConfig;
 
+console.log("Frontend URL from envConfig:", frontendURL);
 if (!frontendURL) {
 	throw new Error("FRONTEND_URL is not defined in environment variables");
 }
@@ -29,14 +30,34 @@ const server = createServer(app);
 app.use(express.json());
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-	cors({
-		origin: frontendURL,
-		methods: ['GET', 'POST', 'OPTIONS'],
-		allowedHeaders: ['Content-Type', 'Authorization'],
-		credentials: true,
-	})
-);
+
+// Replace existing cors setup with explicit options to allow the request header causing the preflight failure
+const corsOptions = {
+	origin: frontendURL,
+	credentials: true,
+	allowedHeaders: [
+		"Content-Type",
+		"Authorization",
+		"X-Requested-With",
+		"Accept",
+		"Origin",
+		"Access-Control-Allow-Origin",
+		"access-control-allow-origin"
+	],
+	methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+	optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+// Ensure preflight OPTIONS requests are handled with the same CORS policy
+app.use((req: Request, res: Response, next) => {
+	if (req.method === "OPTIONS") {
+		// run the cors middleware for preflight requests without registering a path pattern
+		cors(corsOptions)(req, res, next);
+	} else {
+		next();
+	}
+});
 
 // Call helmet with an any-cast to avoid TypeScript "no call signatures" in some build setups
 app.use((helmet as any)());
