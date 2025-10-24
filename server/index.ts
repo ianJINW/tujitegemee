@@ -6,12 +6,12 @@ import { createServer } from "http";
 import helmet from 'helmet';
 import cors from "cors";
 import connectDB from "./utils/db.ts";
-import adminRouter from "./routes/admin.routes";
-import articlesRouter from "./routes/articles.routes";
-import partnerRouter from "./routes/partners.routes";
-import { formParser } from "./middleware/multer";
-import passport from "./middleware/passport";
-import { envConfig } from './config/env.config';
+import adminRouter from "./routes/admin.routes.ts";
+import articlesRouter from "./routes/articles.routes.ts";
+import partnerRouter from "./routes/partners.routes.ts";
+import { formParser } from "./middleware/multer.ts";
+import passport from "./middleware/passport.ts";
+import { envConfig } from './config/env.config.ts';
 import sender from "./utils/mailer.ts";
 
 const { PORT, frontendURL, mongoUri } = envConfig;
@@ -33,6 +33,7 @@ app.use(
 	cors({
 		origin: frontendURL,
 		credentials: true,
+		optionsSuccessStatus: 200,
 	})
 );
 
