@@ -40,8 +40,8 @@ if (!mongoUri) {
 }
 
 const app = express();
-const server = createServer(app);
-
+/* const server = createServer(app);
+ */
 // --- CORS: run early
 const corsOptions = {
 	origin: frontendURL || false,
@@ -143,13 +143,13 @@ if (process.env.VERCEL) {
 	console.log("Running in Vercel serverless environment - exporting handler");
 } else {
 	// Local / traditional server mode
-	server.listen(PORT, () => {
+	app.listen(PORT, () => {
 		console.log(`Server listening on ${PORT}`);
 	});
 
-	server.on("error", (error) => {
+/* 	app.on("error", (error) => {
 		console.error("Server error:", error);
-	});
+	}); */
 }
 
 export default handler;

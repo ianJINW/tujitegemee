@@ -11,5 +11,6 @@ export declare const authConfig: {
         readonly expiry: "7d";
         readonly cookieName: "refreshToken";
     };
+    readonly frontendURL: string;
 };
 //# sourceMappingURL=auth.config.d.ts.map
