@@ -2,7 +2,8 @@
 // This file re-exports the handler exported by `server/index.ts` so Vercel
 // can use it as a serverless function.
 
-import handler from "..";
+import handler from "../index.ts";
+
 
 // Export as `any` to avoid strict type issues in the serverless environment.
 const vercelHandler: any = handler
