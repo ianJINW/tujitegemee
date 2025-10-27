@@ -11,4 +11,3 @@ export declare const envConfig: {
     FRONTEND_URL_NETWORK: string;
     SMTP_HOST: string;
 };
-//# sourceMappingURL=env.config.d.ts.map

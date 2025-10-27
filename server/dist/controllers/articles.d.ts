@@ -5,4 +5,3 @@ declare const getArticleById: (req: Request, res: Response) => Promise<Response<
 declare const updateArticle: (req: Request, res: Response) => Promise<void>;
 declare const deleteArticle: (req: Request, res: Response) => Promise<void>;
 export { createArticle, getArticles, getArticleById, updateArticle, deleteArticle, };
-//# sourceMappingURL=articles.d.ts.map

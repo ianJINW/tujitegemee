@@ -6,4 +6,3 @@ declare const uploads: multer.Multer;
 export declare const formParser: RequestHandler;
 export declare const fileUpload: RequestHandler;
 export default uploads;
-//# sourceMappingURL=multer.d.ts.map

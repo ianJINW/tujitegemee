@@ -23,13 +23,16 @@
     "isolatedModules": true,
     "noEmit": false,
     "allowJs": true,
-    "checkJs": true
+    "checkJs": true,
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "declaration": true
   },
   "include": [
     "./**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "dist"
+    "./node_modules",
+    "./dist"
   ]
 }

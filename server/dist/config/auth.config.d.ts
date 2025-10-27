@@ -13,4 +13,3 @@ export declare const authConfig: {
     };
     readonly frontendURL: string;
 };
-//# sourceMappingURL=auth.config.d.ts.map

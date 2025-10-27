@@ -11,4 +11,3 @@ export declare const config: {
         uri: string | undefined;
     };
 };
-//# sourceMappingURL=config.d.ts.map

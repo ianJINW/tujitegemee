@@ -51,4 +51,3 @@ declare const Partners: import("mongoose").Model<{
     __v: number;
 }>>;
 export default Partners;
-//# sourceMappingURL=Partner.model.d.ts.map

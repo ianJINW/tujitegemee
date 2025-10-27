@@ -14,4 +14,3 @@ declare const Admin: import("mongoose").Model<AdminDocument, {}, {}, {}, Documen
     __v: number;
 }, any>;
 export default Admin;
-//# sourceMappingURL=Admin.model.d.ts.map

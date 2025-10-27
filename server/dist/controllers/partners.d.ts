@@ -5,4 +5,3 @@ declare const getPartnerById: (req: Request, res: Response) => Promise<Response<
 declare const updatePartner: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 declare const deletePartner: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export { createPartner, getPartners, getPartnerById, updatePartner, deletePartner, };
-//# sourceMappingURL=partners.d.ts.map
