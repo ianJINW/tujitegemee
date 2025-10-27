@@ -5,13 +5,10 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "jest",
-		"start": "nodemon --exec ts-node index.ts",
-		"dev": "nodemon --exec ts-node index.ts",
-		"build": "pwd && ls -la && tsc -p tsconfig.build.json && npm run prisma:generate && ls -la dist/",
-		"postbuild": "mkdir -p dist/uploads && cp -r uploads/* dist/uploads/ || true",
-		"prisma:generate": "prisma generate",
-		"prisma:migrate": "prisma migrate dev",
-		"prisma:studio": "prisma studio"
+		"start": "node --experimental-specifier-resolution=node dist/index.js",
+		"dev": "NODE_ENV=development nodemon --exec ts-node --esm index.ts",
+		"build": "rm -rf dist && tsc -p tsconfig.json && npm run prisma:generate",
+		"postbuild": "mkdir -p dist/uploads && cp -r uploads/* dist/uploads/ || true"
 	},
 	"keywords": [],
 	"author": "",

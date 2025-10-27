@@ -6,18 +6,17 @@ import express, { type Request, type Response } from "express";
 import { createServer } from "http";
 import helmet from 'helmet';
 import cors from "cors";
-import serverless from "serverless-http";
 
-import connectDB from "./utils/db.ts";
-import adminRouter from "./routes/admin.routes.ts";
-import articlesRouter from "./routes/articles.routes.ts";
-import partnerRouter from "./routes/partners.routes.ts";
-import { formParser } from "./middleware/multer.ts";
-import passport from "./middleware/passport.ts";
-import { envConfig } from './config/env.config.ts';
-import sender from "./utils/mailer.ts";
+import adminRouter from "./routes/admin.routes.js";
+import articlesRouter from "./routes/articles.routes.js";
+import partnerRouter from "./routes/partners.routes.js";
+import { formParser } from "./middleware/multer.js";
+import passport from "./middleware/passport.js";
+import { envConfig } from './config/env.config.js';
+import sender from "./utils/mailer.js";
+import connectDB from "./utils/db.js";
 
-const { PORT = 3000, frontendURL, mongoUri } = envConfig;
+const { PORT, frontendURL, mongoUri } = envConfig;
 
 console.log("Frontend URL from envConfig:", frontendURL);
 
@@ -44,7 +43,7 @@ const app = express();
  */
 // --- CORS: run early
 const corsOptions = {
-	origin: frontendURL || false,
+	origin: frontendURL,
 	credentials: true,
 	allowedHeaders: [
 		"Content-Type",
@@ -134,22 +133,9 @@ app.use((err: Error, req: Request, res: Response, next: any) => {
 	});
 });
 
-// Create handler for serverless environment
-const handler = process.env.VERCEL ? serverless(app) : undefined;
 
-// --- Export for serverless (Vercel) or listen locally
-if (process.env.VERCEL) {
-	// When running on Vercel, the handler will be used
-	console.log("Running in Vercel serverless environment - exporting handler");
-} else {
-	// Local / traditional server mode
-	app.listen(PORT, () => {
-		console.log(`Server listening on ${PORT}`);
-	});
+app.listen(PORT, () => {
+	console.log(`Server listening on ${PORT}`);
+});
 
-/* 	app.on("error", (error) => {
-		console.error("Server error:", error);
-	}); */
-}
 
-export default handler;

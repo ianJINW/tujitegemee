@@ -2,8 +2,8 @@ services:
   - type: web
     runtime: node
     name: tujitegemee-api
-    buildCommand: cd server && npm install && npm run build
-    startCommand: cd server && npm start
+    buildCommand: npm install && npm run build
+    startCommand: NODE_OPTIONS='--experimental-specifier-resolution=node' npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -13,3 +13,5 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+    autoDeploy: true
+    healthCheckPath: /api/health
