@@ -2,21 +2,19 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "./dist",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2022",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "lib": [
       "ES2022"
     ],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "types": [
       "node"
     ],
     "skipLibCheck": true,
-    /*     "verbatimModuleSyntax": false,
- */ // Other Outputs
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
