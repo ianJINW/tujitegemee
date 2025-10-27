@@ -75,8 +75,10 @@ app.use((req: Request, res: Response) => {
 	res.status(404).send({ message: "Endpoint not found" });
 });
 
-app.listen(PORT, () => {
-	console.log(`Server is running on port ${PORT}`);
+const port = Number(PORT) || 3000;
+
+app.listen(port, '0.0.0.0', () => {
+	console.log(`Server is running on port ${port}`);
 	process.on('unhandledRejection', (reason, promise) => {
 		console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 	});

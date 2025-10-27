@@ -1,25 +1,25 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "description": "The server to TUJITEGEMEE",
-  "keywords": [
-    "TypeScriipt",
-    "MongoDB",
-    "Njenga",
-    "Ian",
-    "Josh"
-  ],
-  "license": "MIT",
-  "author": "Njenga Ian Josh",
-  "type": "module",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "jest",
-		"start": "ts-node-dev --respawn --transpile-only ./index.ts",
+	"name": "server",
+	"version": "1.0.0",
+	"description": "The server to TUJITEGEMEE",
+	"keywords": [
+		"TypeScriipt",
+		"MongoDB",
+		"Njenga",
+		"Ian",
+		"Josh"
+	],
+	"license": "MIT",
+	"author": "Njenga Ian Josh",
+	"type": "module",
+	"main": "dist/index.d.ts",
+	"scripts": {
+		"test": "jest",
+		"start": "nodemon dist/index.d.ts",
 		"build": "rm -rf dist && tsc -p tsconfig.json ",
 		"dev": "nodemon --watch './**/*.ts' --exec 'ts-node' index.ts"
-  }
-  ,	"dependencies": {
+	},
+	"dependencies": {
 		"@sendgrid/mail": "^8.1.6",
 		"@types/node": "^24.9.1",
 		"bcryptjs": "^3.0.2",
@@ -56,5 +56,8 @@
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
 		"typescript": "^5.9.3"
+	},
+	"engines": {
+		"node": ">=18.0.0"
 	}
 }
