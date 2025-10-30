@@ -1,6 +1,6 @@
 // src/models/Admin.model.ts
 import { Schema, model, Document } from "mongoose";
-import { genSalt, hash, compare } from "bcrypt";
+import { genSalt, hash, compare } from "bcryptjs";
 
 export interface IAdmin {
 	email: string;

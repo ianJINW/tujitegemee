@@ -1,4 +1,5 @@
 import Contact from "./Contacts";
+import Docs from "./docx";
 import Partners from "./Partners";
 import Stories from "./Stories";
 const Us: React.FC = () => {
@@ -8,6 +9,7 @@ const Us: React.FC = () => {
 				<Stories />
 				<Partners />
 				<Contact />
+				<Docs />
 			</main>
 		</>
 	);

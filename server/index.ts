@@ -14,6 +14,7 @@ import sender from './utils/mailer.ts';
 import adminRouter from './routes/admin.routes.ts';
 import articlesRouter from './routes/articles.routes.ts';
 import partnerRouter from './routes/partners.routes.ts';
+import documentRouter from './routes/document.routes.ts';
 
 const {PORT, frontendURL,mongoUri } = envConfig
 
@@ -65,6 +66,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api", adminRouter);
 app.use("/api", articlesRouter);
 app.use("/api", partnerRouter);
+app.use("/api", documentRouter);
 
 app.use((err: Error, req: Request, res: Response, next: Function) => {
 	console.error(err.stack);

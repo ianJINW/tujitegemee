@@ -4,6 +4,7 @@ declare global {
 	namespace Express {
 		interface Request {
 			admin?: AdminJwtPayload;
+			file?: Express.Multer.File
 		}
 	}
 }

@@ -8,6 +8,8 @@ import Stories from "./pages/Stories";
 import Us from "./pages/Us";
 import Login, { Logout, Register } from "./pages/createAdmin";
 import Story from "./pages/Story";
+import Docs from "./pages/docx";
+import Home from "./pages/Home";
 
 function App() {
 	return (
@@ -17,13 +19,14 @@ function App() {
 				<Toast />
 
 				<Routes>
-					<Route path="/" element={<Us />} />
+					<Route path="/" element={<Home />} />
 					<Route path="/us" element={<Us />} />
 					<Route path="/login" element={<Login />} />
 					<Route path="/logout" element={<Logout />} />
 					<Route path="/register" element={<Register />} />
 					<Route path="/contact" element={<Contact />} />
 					<Route path="/stories" element={<Stories />} />
+					<Route path="/docs" element={<Docs />} />
 					<Route path="/stories/:id" element={<Story />} />
 					<Route path="/partners" element={<Partners />} />
 					<Route path="/admin" element={<Login />} />

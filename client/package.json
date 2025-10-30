@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@nutrient-sdk/document-authoring": "^1.8.2",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.87.1",
     "axios": "^1.11.0",

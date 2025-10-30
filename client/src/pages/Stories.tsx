@@ -362,7 +362,7 @@ const Stories: React.FC = () => {
 				)}
 			</section>
 
-			{admin && (
+			{admin && location.pathname.startsWith("/stories") && (
 				<form onSubmit={handleSubmit} encType="multipart/form-data" className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl p-6 space-y-6" aria-busy={isPostPending}>
 					<div>
 						<label htmlFor="title" className="block text-md font-medium mb-2">Title</label>
